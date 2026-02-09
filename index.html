@@ -2,15 +2,18 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MFGNU Presse App</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="login-screen">
-        <h1>Portail Presse MFGNU</h1>
-        <button id="btn-login">Se connecter avec Google</button>
-        <p id="error-message" style="color: red;"></p>
+        <div class="box">
+            <h1>Portail Presse MFGNU</h1>
+            <button id="btn-login">Se connecter avec Google</button>
+            <p id="error-message"></p>
+        </div>
     </div>
 
     <div id="app-screen" style="display: none;">
@@ -19,25 +22,41 @@
             <button id="btn-logout">Déconnexion</button>
         </header>
 
-        <main>
+        <div class="container">
             <section id="dashboard">
                 <h2>Infos Presse</h2>
-                <div id="postit-container">
-                    </div>
+                <div id="postit-form" style="display: none;">
+                    <input type="text" id="postit-title" placeholder="Titre">
+                    <textarea id="postit-content" placeholder="Contenu"></textarea>
+                    <button id="btn-add-postit">Ajouter l'info</button>
+                </div>
+                <div id="postit-container"></div>
             </section>
 
             <section id="chat">
                 <h2>Discussion Directe</h2>
                 <div id="chat-messages"></div>
-                <input type="text" id="chat-input" placeholder="Votre message...">
-                <button id="btn-send">Envoyer</button>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" placeholder="Votre message...">
+                    <button id="btn-send">Envoyer</button>
+                </div>
             </section>
-        </main>
+
+            <section id="admin-panel" style="display: none;">
+                <h2>Gestion des Membres</h2>
+                <input type="email" id="new-member-email" placeholder="email@exemple.com">
+                <select id="new-member-role">
+                    <option value="user">Utilisateur</option>
+                    <option value="admin">Admin</option>
+                </select>
+                <button id="btn-add-member">Ajouter</button>
+            </section>
+        </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore-compat.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
