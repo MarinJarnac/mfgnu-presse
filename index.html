@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>MFGNU Presse App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="login-screen">
+        <h1>Portail Presse MFGNU</h1>
+        <button id="btn-login">Se connecter avec Google</button>
+        <p id="error-message" style="color: red;"></p>
+    </div>
+
+    <div id="app-screen" style="display: none;">
+        <header>
+            <h1>Tableau de Bord Presse</h1>
+            <button id="btn-logout">Déconnexion</button>
+        </header>
+
+        <main>
+            <section id="dashboard">
+                <h2>Infos Presse</h2>
+                <div id="postit-container">
+                    </div>
+            </section>
+
+            <section id="chat">
+                <h2>Discussion Directe</h2>
+                <div id="chat-messages"></div>
+                <input type="text" id="chat-input" placeholder="Votre message...">
+                <button id="btn-send">Envoyer</button>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
