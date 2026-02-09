@@ -1,121 +1,34 @@
 :root {
-    --primary-color: #004a99;
-    --secondary-color: #f4f7f6;
-    --accent-color: #ffc107;
+    --primary-color: #004a99; /* Bleu type Écoledirecte */
+    --sidebar-color: #003366;
+    --background-color: #f0f2f5;
+    --accent-color: #ffc107; /* Jaune post-it */
     --text-color: #333;
-    --border-radius: 8px;
 }
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    background-color: var(--secondary-color);
-    color: var(--text-color);
-}
+body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; background-color: var(--background-color); }
 
-/* Écran de connexion */
-#login-screen {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
+/* Layout SPA */
+#app-screen { display: flex; height: 100vh; }
 
-.box {
-    text-align: center;
-    padding: 40px;
-    background: white;
-    border-radius: var(--border-radius);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-}
+/* Sidebar */
+.sidebar { width: 250px; background-color: var(--sidebar-color); color: white; padding: 20px; }
+.sidebar-header h3 { text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+.sidebar ul { list-style: none; padding: 0; margin-top: 30px; }
+.sidebar li { padding: 15px; cursor: pointer; border-radius: 4px; transition: 0.2s; }
+.sidebar li:hover { background-color: rgba(255,255,255,0.1); }
 
-.box h1 { margin-top: 0; color: var(--primary-color); }
-
-/* Boutons */
-button {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-button:hover { background-color: #003366; }
-
-/* Header */
-header {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 15px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-header h1 { margin: 0; font-size: 1.5rem; }
-
-/* Container principal */
-.container {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 20px;
-    padding: 20px;
-}
-
-/* Sections */
-section {
-    background: white;
-    padding: 20px;
-    border-radius: var(--border-radius);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-section h2 { border-bottom: 2px solid var(--secondary-color); padding-bottom: 10px; color: var(--primary-color); }
+/* Main Content */
+.content { flex-grow: 1; display: flex; flex-direction: column; }
+header { background-color: white; padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.page-content { padding: 30px; overflow-y: auto; }
 
 /* Post-its */
-#postit-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
-}
+#postit-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+.postit-item { background-color: #fff9c4; padding: 20px; border-radius: 4px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); position: relative; }
+.postit-item h3 { margin-top: 0; }
+.btn-delete { position: absolute; top: 10px; right: 10px; background: none; color: red; border: none; font-size: 1.2rem; cursor: pointer; }
 
-.postit-item {
-    background-color: #fff9c4;
-    padding: 15px;
-    border-radius: 4px;
-    border-left: 5px solid var(--accent-color);
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
-}
-
-.postit-item h3 { margin-top: 0; color: #5d4037; }
-
-/* Chat */
-#chat-messages {
-    height: 350px;
-    overflow-y: scroll;
-    border: 1px solid #eee;
-    padding: 10px;
-    margin-bottom: 10px;
-    background-color: #fafafa;
-    border-radius: 4px;
-}
-
-.chat-input-area { display: flex; gap: 10px; }
-#chat-input { flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-
-/* Admin Panel */
-#admin-panel { margin-top: 20px; border: 1px solid #eee; }
-#new-member-email, #new-member-role { padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-
-/* Forms input inside sections */
-section input, section textarea {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-sizing: border-box; /* Important pour le padding */
-}
+/* Autres éléments */
+button { background-color: var(--primary-color); color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
+input, select, textarea { padding: 10px; border: 1px solid #ddd; border-radius: 4px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
