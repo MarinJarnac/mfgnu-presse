@@ -17,41 +17,62 @@
     </div>
 
     <div id="app-screen" style="display: none;">
-        <header>
-            <h1>Tableau de Bord Presse</h1>
-            <button id="btn-logout">Déconnexion</button>
-        </header>
+        
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3>MFGNU</h3>
+            </div>
+            <ul>
+                <li onclick="showPage('accueil')">🏠 Accueil</li>
+                <li onclick="showPage('chat')">💬 Discussion</li>
+                <li onclick="showPage('agenda')">📅 Agenda</li>
+                <li onclick="showPage('drive')">📁 Drive</li>
+                <li onclick="showPage('compte')">👤 Mon Compte</li>
+                <li id="menu-admin" onclick="showPage('admin')" style="display:none;">⚙️ Admin</li>
+            </ul>
+        </nav>
 
-        <div class="container">
-            <section id="dashboard">
-                <h2>Infos Presse</h2>
-                <div id="postit-form" style="display: none;">
-                    <input type="text" id="postit-title" placeholder="Titre">
-                    <textarea id="postit-content" placeholder="Contenu"></textarea>
-                    <button id="btn-add-postit">Ajouter l'info</button>
+        <main class="content">
+            <header>
+                <h1 id="page-title">Accueil</h1>
+                <button id="btn-logout">Déconnexion</button>
+            </header>
+
+            <div class="page-content">
+                <div id="page-accueil">
+                    <div id="postit-form" style="display: none; margin-bottom: 20px;">
+                        <input type="text" id="postit-title" placeholder="Titre">
+                        <textarea id="postit-content" placeholder="Contenu"></textarea>
+                        <button id="btn-add-postit">Ajouter l'info</button>
+                    </div>
+                    <div id="postit-container"></div>
                 </div>
-                <div id="postit-container"></div>
-            </section>
 
-            <section id="chat">
-                <h2>Discussion Directe</h2>
-                <div id="chat-messages"></div>
-                <div class="chat-input-area">
-                    <input type="text" id="chat-input" placeholder="Votre message...">
-                    <button id="btn-send">Envoyer</button>
+                <div id="page-chat" style="display:none;">
+                    <div id="chat-messages"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-input" placeholder="Votre message...">
+                        <button id="btn-send">Envoyer</button>
+                    </div>
                 </div>
-            </section>
 
-            <section id="admin-panel" style="display: none;">
-                <h2>Gestion des Membres</h2>
-                <input type="email" id="new-member-email" placeholder="email@exemple.com">
-                <select id="new-member-role">
-                    <option value="user">Utilisateur</option>
-                    <option value="admin">Admin</option>
-                </select>
-                <button id="btn-add-member">Ajouter</button>
-            </section>
-        </div>
+                <div id="page-compte" style="display:none;">
+                    <p><strong>Email:</strong> <span id="user-email"></span></p>
+                    <input type="email" id="edit-email" placeholder="Nouvel email">
+                    <button id="btn-update-email">Mettre à jour l'email</button>
+                </div>
+                
+                <div id="page-admin" style="display:none;">
+                    <h3>Ajouter/Modifier un membre</h3>
+                    <input type="email" id="new-member-email" placeholder="email@exemple.com">
+                    <select id="new-member-role">
+                        <option value="user">Utilisateur</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                    <button id="btn-add-member">Sauvegarder</button>
+                </div>
+            </div>
+        </main>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
