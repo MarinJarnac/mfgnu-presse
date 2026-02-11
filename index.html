@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MFGNU-PRESSE</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --bg-light: #f8fafc;
+            --bg-white: #ffffff;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        .dark-theme {
+            --bg-light: #0f172a;
+            --bg-white: #1e293b;
+            --text-dark: #f1f5f9;
+            --text-gray: #94a3b8;
+            --border: #334155;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--bg-white);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .logo svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-light);
+        }
+
+        .nav-item.active {
+            background: var(--bg-light);
+            border-left-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .user-profile {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: var(--text-gray);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .top-bar {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 40px 10px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            font-size: 14px;
+        }
+
+        .search-bar svg {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: var(--text-gray);
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .icon-button {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            position: relative;
+        }
+
+        .icon-button:hover {
+            background: var(--bg-light);
+        }
+
+        .icon-button svg {
+            width: 20px;
+            height: 20px;
+            color: var(--text-dark);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            background: var(--danger);
+            border-radius: 50%;
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: var(--text-gray);
+            font-size: 14px;
+        }
+
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-card {
+            background: white;
+            padding: 48px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: var(--primary);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-logo svg {
+            width: 48px;
+            height: 48px;
+            color: white;
+        }
+
+        .login-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .login-subtitle {
+            color: var(--text-gray);
+            margin-bottom: 32px;
+        }
+
+        .google-button {
+            width: 100%;
+            padding: 14px 24px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+
+        .google-button:hover {
+            background: var(--bg-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-white);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px var(--shadow);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-icon.blue {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
+        }
+
+        .stat-icon.green {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .stat-icon.yellow {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .stat-icon.red {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: var(--text-gray);
+            font-size: 14px;
+        }
+
+        .postit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .postit {
+            background: var(--bg-white);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 2px 8px var(--shadow);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .postit:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px var(--shadow);
+        }
+
+        .postit.yellow {
+            border-left-color: var(--warning);
+            background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%);
+        }
+
+        .postit.green {
+            border-left-color: var(--success);
+            background: linear-gradient(135deg, #d1fae5 0%, #dcfce7 100%);
+        }
+
+        .postit.red {
+            border-left-color: var(--danger);
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        }
+
+        .postit.blue {
+            border-left-color: var(--primary);
+            background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%);
+        }
+
+        .postit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .postit-title {
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--text-dark);
+        }
+
+        .postit-delete {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .postit-delete:hover {
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .postit-content {
+            color: var(--text-dark);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .postit-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-gray);
+        }
+
+        .primary-button {
+            padding: 12px 32px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .primary-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .settings-section {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .settings-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                z-index: 1000;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .postit-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // ============================================
+        // CONFIGURATION FIREBASE
+        // ============================================
+        // IMPORTANT: Remplacez ces valeurs par celles de votre projet Firebase
+        // Pour obtenir ces valeurs :
+        // 1. Allez sur https://console.firebase.google.com/
+        // 2. Sélectionnez votre projet
+        // 3. Project Settings > General > Your apps > Web app
+        // 4. Copiez la configuration firebaseConfig
+        
+        const firebaseConfig = {
+            apiKey: "VOTRE_API_KEY",
+            authDomain: "VOTRE_PROJECT_ID.firebaseapp.com",
+            projectId: "VOTRE_PROJECT_ID",
+            storageBucket: "VOTRE_PROJECT_ID.appspot.com",
+            messagingSenderId: "VOTRE_SENDER_ID",
+            appId: "VOTRE_APP_ID"
+        };
+
+        // Initialisation Firebase
+        let auth, db;
+        let firebaseInitialized = false;
+
+        try {
+            if (typeof firebase !== 'undefined') {
+                firebase.initializeApp(firebaseConfig);
+                auth = firebase.auth();
+                db = firebase.firestore();
+                firebaseInitialized = true;
+                console.log('✅ Firebase initialisé avec succès');
+            }
+        } catch (error) {
+            console.warn('⚠️ Firebase non configuré. Mode démo activé.', error);
+            firebaseInitialized = false;
+        }
+
+        // ============================================
+        // ICÔNES SVG
+        // ============================================
+        const Icon = ({ name, size = 24, ...props }) => {
+            const icons = {
+                newspaper: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>,
+                home: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+                calendar: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+                message: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+                folder: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>,
+                settings: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m5.2-13.2-4.2 4.2m0 6 4.2 4.2M23 12h-6m-6 0H5m13.2 5.2-4.2-4.2m0-6-4.2-4.2"/></svg>,
+                users: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+                search: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>,
+                bell: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
+                moon: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>,
+                sun: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>,
+                logout: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
+                menu: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
+                plus: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+                trash: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
+                send: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
+                file: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>,
+            };
+            return icons[name] || null;
+        };
+
+        // Données simulées
+        const storage = {
+            users: [
+                { id: 1, email: 'admin@mfgnu.com', name: 'Admin MFGNU', role: 'admin', avatar: 'A' },
+                { id: 2, email: 'editor@mfgnu.com', name: 'Éditeur Press', role: 'editor', avatar: 'E' },
+                { id: 3, email: 'member@mfgnu.com', name: 'Membre Press', role: 'member', avatar: 'M' }
+            ],
+            postits: [
+                { id: 1, title: 'Réunion importante', content: 'Réunion d\'équipe demain à 14h pour discuter du prochain numéro', color: 'yellow', author: 'Admin MFGNU', date: '2026-02-10', authorId: 1 },
+                { id: 2, title: 'Deadline article', content: 'Les articles pour le numéro de mars doivent être rendus avant le 20 février', color: 'red', author: 'Éditeur Press', date: '2026-02-09', authorId: 2 },
+                { id: 3, title: 'Interview prévue', content: 'Interview avec le directeur du campus vendredi à 10h', color: 'green', author: 'Admin MFGNU', date: '2026-02-11', authorId: 1 }
+            ],
+            messages: [
+                { id: 1, sender: 'Admin MFGNU', senderId: 1, text: 'Bienvenue sur MFGNU Press Hub ! 👋', time: '10:30', avatar: 'A' },
+                { id: 2, sender: 'Éditeur Press', senderId: 2, text: 'Super application, merci !', time: '10:32', avatar: 'E' }
+            ]
+        };
+
+        function App() {
+            const [isLoggedIn, setIsLoggedIn] = useState(false);
+            const [currentUser, setCurrentUser] = useState(null);
+            const [currentPage, setCurrentPage] = useState('dashboard');
+            const [darkTheme, setDarkTheme] = useState(false);
+            const [postits, setPostits] = useState(storage.postits);
+            const [messages, setMessages] = useState(storage.messages);
+
+            // Charger les post-its depuis Firestore
+            useEffect(() => {
+                if (!firebaseInitialized || !isLoggedIn) return;
+
+                const unsubscribe = db.collection('postits')
+                    .orderBy('date', 'desc')
+                    .onSnapshot((snapshot) => {
+                        const postitsList = snapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        }));
+                        setPostits(postitsList);
+                        console.log('📌 Post-its chargés:', postitsList.length);
+                    }, (error) => {
+                        console.error('Erreur chargement post-its:', error);
+                    });
+
+                return () => unsubscribe();
+            }, [firebaseInitialized, isLoggedIn]);
+
+            // Charger les messages depuis Firestore
+            useEffect(() => {
+                if (!firebaseInitialized || !isLoggedIn) return;
+
+                const unsubscribe = db.collection('messages')
+                    .orderBy('timestamp', 'asc')
+                    .limit(100)
+                    .onSnapshot((snapshot) => {
+                        const messagesList = snapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        }));
+                        setMessages(messagesList);
+                        console.log('💬 Messages chargés:', messagesList.length);
+                    }, (error) => {
+                        console.error('Erreur chargement messages:', error);
+                    });
+
+                return () => unsubscribe();
+            }, [firebaseInitialized, isLoggedIn]);
+
+            useEffect(() => {
+                if (darkTheme) {
+                    document.body.classList.add('dark-theme');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                }
+            }, [darkTheme]);
+
+            // Écouter les changements d'état d'authentification Firebase
+            useEffect(() => {
+                if (!firebaseInitialized) return;
+
+                const unsubscribe = auth.onAuthStateChanged(async (user) => {
+                    if (user) {
+                        console.log('Utilisateur détecté:', user.email);
+                        // Récupérer les données utilisateur
+                        const userDoc = await db.collection('users').doc(user.uid).get();
+                        if (userDoc.exists) {
+                            const userData = userDoc.data();
+                            setCurrentUser({ id: user.uid, ...userData });
+                            setIsLoggedIn(true);
+                        }
+                    } else {
+                        console.log('Aucun utilisateur connecté');
+                        setIsLoggedIn(false);
+                        setCurrentUser(null);
+                    }
+                });
+
+                return () => unsubscribe();
+            }, []);
+
+            const handleLogin = async () => {
+                if (!firebaseInitialized) {
+                    // Mode démo si Firebase n'est pas configuré
+                    console.log('Mode démo: Firebase non configuré');
+                    const user = storage.users[0];
+                    setCurrentUser(user);
+                    setIsLoggedIn(true);
+                    return;
+                }
+
+                // Authentification Google avec Firebase
+                const provider = new firebase.auth.GoogleAuthProvider();
+                try {
+                    const result = await auth.signInWithPopup(provider);
+                    const user = result.user;
+                    
+                    console.log('Utilisateur connecté:', user.email);
+                    
+                    // Vérifier si l'email est dans la whitelist
+                    const whitelistDoc = await db.collection('config').doc('whitelist').get();
+                    const allowedEmails = whitelistDoc.exists ? whitelistDoc.data().emails || [] : [];
+                    
+                    console.log('Whitelist:', allowedEmails);
+                    
+                    if (allowedEmails.length === 0 || allowedEmails.includes(user.email)) {
+                        // Récupérer ou créer les infos utilisateur
+                        const userDoc = await db.collection('users').doc(user.uid).get();
+                        let userData;
+                        
+                        if (userDoc.exists) {
+                            userData = userDoc.data();
+                        } else {
+                            // Nouvel utilisateur - role par défaut
+                            userData = {
+                                email: user.email,
+                                name: user.displayName || user.email.split('@')[0],
+                                role: 'member',
+                                avatar: (user.displayName || user.email)[0].toUpperCase(),
+                                createdAt: new Date().toISOString()
+                            };
+                            
+                            // Sauvegarder l'utilisateur
+                            await db.collection('users').doc(user.uid).set(userData);
+                        }
+                        
+                        setCurrentUser({ id: user.uid, ...userData });
+                        setIsLoggedIn(true);
+                        
+                        console.log('✅ Connexion réussie:', userData);
+                    } else {
+                        alert('❌ Accès refusé\n\nVotre compte n\'est pas autorisé à accéder à MFGNU-PRESSE.\n\nContactez un administrateur pour obtenir l\'accès.');
+                        await auth.signOut();
+                    }
+                } catch (error) {
+                    console.error('Erreur de connexion:', error);
+                    if (error.code === 'auth/popup-closed-by-user') {
+                        // L'utilisateur a fermé la popup, pas d'alerte
+                        return;
+                    }
+                    alert('Erreur lors de la connexion. Veuillez réessayer.');
+                }
+            };
+
+            const handleLogout = async () => {
+                if (firebaseInitialized) {
+                    try {
+                        await auth.signOut();
+                        console.log('✅ Déconnexion réussie');
+                    } catch (error) {
+                        console.error('Erreur lors de la déconnexion:', error);
+                    }
+                }
+                setIsLoggedIn(false);
+                setCurrentUser(null);
+            };
+
+            const deletePostit = async (id) => {
+                if (!firebaseInitialized) {
+                    // Mode démo
+                    setPostits(postits.filter(p => p.id !== id));
+                    return;
+                }
+
+                try {
+                    await db.collection('postits').doc(id).delete();
+                    console.log('🗑️ Post-it supprimé:', id);
+                } catch (error) {
+                    console.error('Erreur suppression post-it:', error);
+                    alert('Erreur lors de la suppression du post-it');
+                }
+            };
+
+            const addPostit = async (title, content, color) => {
+                if (!currentUser) return;
+
+                const newPostit = {
+                    title,
+                    content,
+                    color,
+                    author: currentUser.name,
+                    authorId: currentUser.id,
+                    date: new Date().toISOString().split('T')[0],
+                    createdAt: new Date().toISOString()
+                };
+
+                if (!firebaseInitialized) {
+                    // Mode démo
+                    setPostits([{ id: Date.now().toString(), ...newPostit }, ...postits]);
+                    return;
+                }
+
+                try {
+                    await db.collection('postits').add(newPostit);
+                    console.log('📌 Post-it créé');
+                } catch (error) {
+                    console.error('Erreur création post-it:', error);
+                    alert('Erreur lors de la création du post-it');
+                }
+            };
+
+            if (!isLoggedIn) {
+                return <LoginPage onLogin={handleLogin} />;
+            }
+
+            return (
+                <div className="app-container">
+                    <Sidebar 
+                        currentPage={currentPage}
+                        setCurrentPage={setCurrentPage}
+                        currentUser={currentUser}
+                        onLogout={handleLogout}
+                    />
+                    <div className="main-content">
+                        <TopBar 
+                            darkTheme={darkTheme}
+                            setDarkTheme={setDarkTheme}
+                        />
+                        <div className="content-area">
+                            {currentPage === 'dashboard' && (
+                                <DashboardPage 
+                                    postits={postits}
+                                    deletePostit={deletePostit}
+                                    addPostit={addPostit}
+                                    currentUser={currentUser}
+                                    messages={messages}
+                                />
+                            )}
+                            {currentPage === 'calendar' && <CalendarPage />}
+                            {currentPage === 'chat' && <ChatPage messages={messages} currentUser={currentUser} />}
+                            {currentPage === 'drive' && <DrivePage />}
+                            {currentPage === 'settings' && <SettingsPage currentUser={currentUser} />}
+                            {currentPage === 'admin' && currentUser?.role === 'admin' && <AdminPage />}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function LoginPage({ onLogin }) {
+            return (
+                <div className="login-container">
+                    <div className="login-card">
+                        <div className="login-logo">
+                            <img src="logo.webp" alt="MFGNU-PRESSE" style={{width: '64px', height: '64px', objectFit: 'contain'}} />
+                        </div>
+                        <h1 className="login-title">MFGNU-PRESSE</h1>
+                        <p className="login-subtitle">Connectez-vous pour accéder à votre espace presse</p>
+                        <button className="google-button" onClick={onLogin}>
+                            <svg width="20" height="20" viewBox="0 0 20 20">
+                                <path fill="#4285F4" d="M19.6 10.23c0-.82-.1-1.42-.25-2.05H10v3.72h5.5c-.15.96-.74 2.31-2.04 3.22v2.45h3.16c1.89-1.73 2.98-4.3 2.98-7.34z"/>
+                                <path fill="#34A853" d="M13.46 15.13c-.83.59-1.96 1-3.46 1-2.64 0-4.88-1.74-5.68-4.15H1.07v2.52C2.72 17.75 6.09 20 10 20c2.7 0 4.96-.89 6.62-2.42l-3.16-2.45z"/>
+                                <path fill="#FBBC05" d="M3.99 10c0-.69.12-1.35.32-1.97V5.51H1.07A9.973 9.973 0 000 10c0 1.61.39 3.14 1.07 4.49l3.24-2.52c-.2-.62-.32-1.28-.32-1.97z"/>
+                                <path fill="#EA4335" d="M10 3.88c1.88 0 3.13.81 3.85 1.48l2.84-2.76C14.96.99 12.7 0 10 0 6.09 0 2.72 2.25 1.07 5.51l3.24 2.52C5.12 5.62 7.36 3.88 10 3.88z"/>
+                            </svg>
+                            Se connecter avec Google
+                        </button>
+                        <p style={{marginTop: '20px', fontSize: '14px', color: '#64748b'}}>
+                            Mode démo : Cliquez pour accéder
+                        </p>
+                    </div>
+                </div>
+            );
+        }
+
+        function Sidebar({ currentPage, setCurrentPage, currentUser, onLogout }) {
+            const menuItems = [
+                { id: 'dashboard', label: 'Tableau de bord', icon: 'home' },
+                { id: 'calendar', label: 'Calendrier', icon: 'calendar' },
+                { id: 'chat', label: 'Discussion', icon: 'message' },
+                { id: 'drive', label: 'Drive Partagé', icon: 'folder' },
+                { id: 'settings', label: 'Paramètres', icon: 'settings' }
+            ];
+
+            if (currentUser?.role === 'admin') {
+                menuItems.push({ id: 'admin', label: 'Administration', icon: 'users' });
+            }
+
+            return (
+                <div className="sidebar">
+                    <div className="sidebar-header">
+                        <div className="logo">
+                            <img src="logo.webp" alt="MFGNU-PRESSE" style={{width: '32px', height: '32px', objectFit: 'contain'}} />
+                            <span>MFGNU-PRESSE</span>
+                        </div>
+                    </div>
+                    <div className="nav-menu">
+                        {menuItems.map(item => (
+                            <div
+                                key={item.id}
+                                className={`nav-item ${currentPage === item.id ? 'active' : ''}`}
+                                onClick={() => setCurrentPage(item.id)}
+                            >
+                                <Icon name={item.icon} size={20} />
+                                <span>{item.label}</span>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="user-profile">
+                        <div className="user-avatar">{currentUser?.avatar}</div>
+                        <div className="user-info">
+                            <div className="user-name">{currentUser?.name}</div>
+                            <div className="user-role">{currentUser?.role}</div>
+                        </div>
+                        <button className="icon-button" onClick={onLogout}>
+                            <Icon name="logout" size={18} />
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        function TopBar({ darkTheme, setDarkTheme }) {
+            return (
+                <div className="top-bar">
+                    <div className="search-bar">
+                        <input type="text" placeholder="Rechercher..." />
+                        <Icon name="search" size={18} />
+                    </div>
+                    <div className="top-actions">
+                        <button className="icon-button" onClick={() => setDarkTheme(!darkTheme)}>
+                            <Icon name={darkTheme ? 'sun' : 'moon'} size={20} />
+                        </button>
+                        <button className="icon-button">
+                            <Icon name="bell" size={20} />
+                            <span className="notification-badge"></span>
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        function DashboardPage({ postits, deletePostit, addPostit, currentUser, messages }) {
+            const [showModal, setShowModal] = useState(false);
+            const [postitTitle, setPostitTitle] = useState('');
+            const [postitContent, setPostitContent] = useState('');
+            const [postitColor, setPostitColor] = useState('yellow');
+
+            const handleCreatePostit = () => {
+                if (postitTitle.trim() && postitContent.trim()) {
+                    addPostit(postitTitle, postitContent, postitColor);
+                    setPostitTitle('');
+                    setPostitContent('');
+                    setPostitColor('yellow');
+                    setShowModal(false);
+                }
+            };
+
+            return (
+                <div>
+                    <div className="page-header">
+                        <h1 className="page-title">🏠 Tableau de bord</h1>
+                        <p className="page-subtitle">Vue d'ensemble de votre espace presse</p>
+                    </div>
+
+                    <div className="dashboard-grid">
+                        <div className="stat-card">
+                            <div className="stat-header">
+                                <div className="stat-icon blue">
+                                    <Icon name="file" size={24} />
+                                </div>
+                            </div>
+                            <div className="stat-value">{postits.length}</div>
+                            <div className="stat-label">Post-its actifs</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-header">
+                                <div className="stat-icon green">
+                                    <Icon name="calendar" size={24} />
+                                </div>
+                            </div>
+                            <div className="stat-value">5</div>
+                            <div className="stat-label">Événements à venir</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-header">
+                                <div className="stat-icon yellow">
+                                    <Icon name="message" size={24} />
+                                </div>
+                            </div>
+                            <div className="stat-value">{messages.length}</div>
+                            <div className="stat-label">Messages échangés</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-header">
+                                <div className="stat-icon red">
+                                    <Icon name="users" size={24} />
+                                </div>
+                            </div>
+                            <div className="stat-value">3</div>
+                            <div className="stat-label">Membres actifs</div>
+                        </div>
+                    </div>
+
+                    <div className="settings-section">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                            <h2 className="settings-title">📌 Informations importantes</h2>
+                            {(currentUser?.role === 'admin' || currentUser?.role === 'editor') && (
+                                <button className="primary-button" onClick={() => setShowModal(true)}>
+                                    <Icon name="plus" size={20} />
+                                    Nouveau post-it
+                                </button>
+                            )}
+                        </div>
+                        <div className="postit-grid">
+                            {postits.map(postit => (
+                                <div key={postit.id} className={`postit ${postit.color}`}>
+                                    <div className="postit-header">
+                                        <div className="postit-title">{postit.title}</div>
+                                        {(currentUser?.id === postit.authorId || currentUser?.role === 'admin') && (
+                                            <button className="postit-delete" onClick={() => deletePostit(postit.id)}>
+                                                <Icon name="trash" size={16} />
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="postit-content">{postit.content}</div>
+                                    <div className="postit-footer">
+                                        <span>{postit.author}</span>
+                                        <span>{new Date(postit.date).toLocaleDateString('fr-FR')}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Modal pour créer un post-it */}
+                    {showModal && (
+                        <div style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: 'rgba(0, 0, 0, 0.5)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            zIndex: 1000
+                        }} onClick={() => setShowModal(false)}>
+                            <div style={{
+                                background: 'var(--bg-white)',
+                                padding: '32px',
+                                borderRadius: '16px',
+                                maxWidth: '500px',
+                                width: '90%'
+                            }} onClick={(e) => e.stopPropagation()}>
+                                <h2 style={{fontSize: '20px', fontWeight: '700', marginBottom: '24px'}}>Nouveau post-it</h2>
+                                <div style={{marginBottom: '20px'}}>
+                                    <label style={{display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px'}}>Titre</label>
+                                    <input 
+                                        type="text"
+                                        value={postitTitle}
+                                        onChange={(e) => setPostitTitle(e.target.value)}
+                                        style={{
+                                            width: '100%',
+                                            padding: '12px 16px',
+                                            border: '1px solid var(--border)',
+                                            borderRadius: '8px',
+                                            background: 'var(--bg-light)',
+                                            color: 'var(--text-dark)',
+                                            fontSize: '14px'
+                                        }}
+                                    />
+                                </div>
+                                <div style={{marginBottom: '20px'}}>
+                                    <label style={{display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px'}}>Contenu</label>
+                                    <textarea 
+                                        value={postitContent}
+                                        onChange={(e) => setPostitContent(e.target.value)}
+                                        style={{
+                                            width: '100%',
+                                            padding: '12px 16px',
+                                            border: '1px solid var(--border)',
+                                            borderRadius: '8px',
+                                            background: 'var(--bg-light)',
+                                            color: 'var(--text-dark)',
+                                            fontSize: '14px',
+                                            minHeight: '120px',
+                                            resize: 'vertical',
+                                            fontFamily: 'inherit'
+                                        }}
+                                    />
+                                </div>
+                                <div style={{marginBottom: '24px'}}>
+                                    <label style={{display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px'}}>Couleur</label>
+                                    <select 
+                                        value={postitColor}
+                                        onChange={(e) => setPostitColor(e.target.value)}
+                                        style={{
+                                            width: '100%',
+                                            padding: '12px 16px',
+                                            border: '1px solid var(--border)',
+                                            borderRadius: '8px',
+                                            background: 'var(--bg-light)',
+                                            color: 'var(--text-dark)',
+                                            fontSize: '14px',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        <option value="yellow">Jaune</option>
+                                        <option value="green">Vert</option>
+                                        <option value="red">Rouge</option>
+                                        <option value="blue">Bleu</option>
+                                    </select>
+                                </div>
+                                <div style={{display: 'flex', gap: '12px', justifyContent: 'flex-end'}}>
+                                    <button 
+                                        onClick={() => setShowModal(false)}
+                                        style={{
+                                            padding: '10px 24px',
+                                            background: 'transparent',
+                                            border: '1px solid var(--border)',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                            fontWeight: '600'
+                                        }}
+                                    >
+                                        Annuler
+                                    </button>
+                                    <button 
+                                        onClick={handleCreatePostit}
+                                        className="primary-button"
+                                    >
+                                        Créer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function CalendarPage() {
+            return (
+                <div>
+                    <div className="page-header">
+                        <h1 className="page-title">📅 Calendrier</h1>
+                        <p className="page-subtitle">Gérez vos événements et deadlines</p>
+                    </div>
+                    <div className="settings-section">
+                        <h2 className="settings-title">Février 2026</h2>
+                        <p>Le calendrier complet sera disponible dans la version avec Firebase.</p>
+                        <div style={{marginTop: '20px'}}>
+                            <h3 style={{marginBottom: '10px'}}>Événements à venir :</h3>
+                            <ul style={{listStyle: 'none', padding: 0}}>
+                                <li style={{padding: '12px', background: 'var(--bg-light)', marginBottom: '8px', borderRadius: '8px'}}>
+                                    <strong>12 Février 2026</strong> - Réunion rédaction à 14h00
+                                </li>
+                                <li style={{padding: '12px', background: 'var(--bg-light)', marginBottom: '8px', borderRadius: '8px'}}>
+                                    <strong>20 Février 2026</strong> - Deadline articles à 23h59
+                                </li>
+                                <li style={{padding: '12px', background: 'var(--bg-light)', marginBottom: '8px', borderRadius: '8px'}}>
+                                    <strong>1 Mars 2026</strong> - Publication journal à 09h00
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function ChatPage({ messages, currentUser }) {
+            const [messageInput, setMessageInput] = useState('');
+
+            const sendMessage = async () => {
+                if (!messageInput.trim() || !currentUser) return;
+
+                const newMessage = {
+                    sender: currentUser.name,
+                    senderId: currentUser.id,
+                    text: messageInput,
+                    time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+                    avatar: currentUser.avatar,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                if (!firebaseInitialized) {
+                    // Mode démo - affichage local uniquement
+                    console.log('Mode démo: message non sauvegardé');
+                    setMessageInput('');
+                    return;
+                }
+
+                try {
+                    await db.collection('messages').add(newMessage);
+                    setMessageInput('');
+                    console.log('💬 Message envoyé');
+                } catch (error) {
+                    console.error('Erreur envoi message:', error);
+                    alert('Erreur lors de l\'envoi du message');
+                }
+            };
+
+            return (
+                <div>
+                    <div className="page-header">
+                        <h1 className="page-title">💬 Discussion</h1>
+                        <p className="page-subtitle">Chat en direct avec votre équipe</p>
+                    </div>
+                    <div className="settings-section">
+                        <div style={{minHeight: '400px', maxHeight: '500px', overflowY: 'auto', marginBottom: '20px', padding: '20px', background: 'var(--bg-light)', borderRadius: '8px'}}>
+                            {messages.map(msg => (
+                                <div key={msg.id} style={{
+                                    marginBottom: '16px',
+                                    display: 'flex',
+                                    gap: '12px',
+                                    flexDirection: msg.senderId === currentUser.id ? 'row-reverse' : 'row'
+                                }}>
+                                    <div className="user-avatar" style={{width: '36px', height: '36px', fontSize: '14px'}}>
+                                        {msg.avatar}
+                                    </div>
+                                    <div style={{
+                                        background: msg.senderId === currentUser.id ? 'var(--primary)' : 'var(--bg-white)',
+                                        color: msg.senderId === currentUser.id ? 'white' : 'var(--text-dark)',
+                                        padding: '12px 16px',
+                                        borderRadius: '16px',
+                                        maxWidth: '70%'
+                                    }}>
+                                        {msg.senderId !== currentUser.id && (
+                                            <div style={{fontWeight: '600', fontSize: '14px', marginBottom: '4px'}}>
+                                                {msg.sender}
+                                            </div>
+                                        )}
+                                        <div style={{fontSize: '14px', lineHeight: '1.5'}}>{msg.text}</div>
+                                        <div style={{fontSize: '11px', marginTop: '4px', opacity: 0.7}}>
+                                            {msg.time}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div style={{display: 'flex', gap: '12px'}}>
+                            <input
+                                type="text"
+                                placeholder="Tapez votre message..."
+                                value={messageInput}
+                                onChange={(e) => setMessageInput(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                                style={{
+                                    flex: 1,
+                                    padding: '12px 16px',
+                                    border: '1px solid var(--border)',
+                                    borderRadius: '24px',
+                                    background: 'var(--bg-light)',
+                                    color: 'var(--text-dark)',
+                                    fontSize: '14px'
+                                }}
+                            />
+                            <button 
+                                onClick={sendMessage}
+                                style={{
+                                    width: '48px',
+                                    height: '48px',
+                                    border: 'none',
+                                    background: 'var(--primary)',
+                                    color: 'white',
+                                    borderRadius: '50%',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}
+                            >
+                                <Icon name="send" size={20} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function DrivePage() {
+            return (
+                <div>
+                    <div className="page-header">
+                        <h1 className="page-title">📁 Drive Partagé</h1>
+                        <p className="page-subtitle">Accédez à tous vos documents partagés</p>
+                    </div>
+                    <div className="settings-section" style={{textAlign: 'center', padding: '60px 24px'}}>
+                        <div style={{
+                            width: '80px',
+                            height: '80px',
+                            margin: '0 auto 24px',
+                            background: 'linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 75%, #ea4335 100%)',
+                            borderRadius: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <Icon name="folder" size={48} color="white" />
+                        </div>
+                        <h2 style={{fontSize: '24px', marginBottom: '12px'}}>Google Drive MFGNU-PRESSE</h2>
+                        <p style={{color: 'var(--text-gray)', marginBottom: '32px'}}>
+                            Accédez à tous les documents, photos, et fichiers de la presse
+                        </p>
+                        <button className="primary-button" onClick={() => window.open('https://drive.google.com', '_blank')}>
+                            Ouvrir Google Drive
+                        </button>
+                        <div style={{marginTop: '32px', padding: '20px', background: 'var(--bg-light)', borderRadius: '8px'}}>
+                            <p style={{fontSize: '14px', color: 'var(--text-gray)'}}>
+                                💡 <strong>Note :</strong> Configurez le lien de votre Drive partagé dans le code source
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function SettingsPage({ currentUser }) {
+            return (
+                <div>
+                    <div className="page-header">
+                        <h1 className="page-title">⚙️ Paramètres</h1>
+                        <p className="page-subtitle">Personnalisez votre compte</p>
+                    </div>
+                    <div className="settings-section">
+                        <h2 className="settings-title">Informations personnelles</h2>
+                        <p style={{marginBottom: '20px'}}>
+                            <strong>Nom :</strong> {currentUser.name}<br/>
+                            <strong>Email :</strong> {currentUser.email}<br/>
+                            <strong>Rôle :</strong> {currentUser.role}
+                        </p>
+                        <p style={{color: 'var(--text-gray)', fontSize: '14px'}}>
+                            Les paramètres complets seront disponibles avec Firebase configuré.
+                        </p>
+                    </div>
+                </div>
+            );
+        }
+
+        function AdminPage() {
+            return (
+                <div>
+                    <div className="page-header">
+                        <h1 className="page-title">👤 Administration</h1>
+                        <p className="page-subtitle">Gérez les utilisateurs et les permissions</p>
+                    </div>
+                    <div className="settings-section">
+                        <h2 className="settings-title">Panel d'administration</h2>
+                        <p style={{color: 'var(--text-gray)'}}>
+                            Le panel d'administration complet sera disponible après la configuration de Firebase.
+                            Vous pourrez gérer :
+                        </p>
+                        <ul style={{marginTop: '16px', paddingLeft: '20px', color: 'var(--text-gray)'}}>
+                            <li>La whitelist des emails autorisés</li>
+                            <li>Les rôles des utilisateurs</li>
+                            <li>Les statistiques d'utilisation</li>
+                            <li>La modération du contenu</li>
+                        </ul>
+                    </div>
+                </div>
+            );
+        }
+
+        // Rendu de l'application
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
